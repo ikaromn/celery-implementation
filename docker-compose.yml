@@ -3,28 +3,54 @@ version: '3'
 services:
   db:
     image: postgres
+
   rabbitmq:
-    image: rabbitmq:3.7.7
+    image: rabbitmq:3.7.7-management
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    expose:
+      - "5432"
+
   web:
     build: .
     volumes:
       - .:/code
+      - ./celeryimplementation/celeryimplementation-celery.conf:/etc/supervisor/conf.d/celeryimplementation-celey.conf
     environment:
-    - HOST=db
-    - NAME=postgres
-    - USER=postgres
-    - PASSWORD=root
+      - HOST=db
+      - NAME=postgres
+      - USER=postgres
+      - PASSWORD=root
+      - C_FORCE_ROOT=true
     ports:
       - "8000:8000"
     depends_on:
       - db
     links:
       - rabbitmq
+      - db
     entrypoint:
-    - sh
-    - -c
-    - |
-      sleep 3
-      python3 manage.py migrate
-      python3 manage.py runserver 0.0.0.0:8000
+      - sh
+      - -c
+      - |
+        sleep 3
+        python3 manage.py migrate
+        python3 manage.py runserver 0.0.0.0:8000
 
+  worker:
+    build: .
+    command: /usr/local/bin/celery worker --workdir /code -A celeryimplementation --loglevel=INFO
+    environment:
+      - HOST=db
+      - NAME=postgres
+      - USER=postgres
+      - PASSWORD=root
+      - C_FORCE_ROOT=true
+    links:
+      - rabbitmq
+    depends_on:
+      - rabbitmq

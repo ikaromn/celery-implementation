@@ -5,6 +5,7 @@ from django.utils.crypto import get_random_string
 
 from celery import shared_task
 
+
 @shared_task
 def create_random_user_accounts(total):
     for i in range(total):
