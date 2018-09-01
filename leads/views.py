@@ -13,7 +13,8 @@ class LeadListCreate(generics.ListCreateAPIView):
 
 class SimplePostView(views.APIView):
 
-    def post(self, request):
-        create_random_user_accounts.delay(50)
+    def post(self, request, **kwargs):
+
+        create_random_user_accounts.delay(request.data['total'])
 
         return JsonResponse({"hello": "World"})

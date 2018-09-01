@@ -43,7 +43,7 @@ services:
 
   worker:
     build: .
-    command: /usr/local/bin/celery worker --workdir /code -A celeryimplementation --loglevel=INFO
+    command: /usr/local/bin/celery worker --workdir /code -A celeryimplementation -Q create-random-user-accounts --loglevel=INFO
     environment:
       - HOST=db
       - NAME=postgres
